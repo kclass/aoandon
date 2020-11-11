@@ -1,0 +1,19 @@
+spring:
+  datasource:
+    druid:
+      postgresql:
+        driver-class-name: org.postgresql.Driver
+        url: jdbc:postgresql://172.18.2.6:5832/zxvmax?allowMultiQueries=true&useSSL=false&useUnicode=true&characterEncoding=utf8
+        username: postgres
+        password: U_tywg_2013
+        initial-size: 2
+        min-idle: 5
+        max-active: 20
+        validation-query: select 1
+        test-on-borrow: false
+        test-on-return: false
+        test-while-idle: true
+        min-evictable-idle-time-millis: 300000
+        filter:
+          stat:
+            log-slow-sql: true

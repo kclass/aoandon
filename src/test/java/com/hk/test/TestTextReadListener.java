@@ -10,7 +10,7 @@ import java.util.Map;
  */
 public class TestTextReadListener extends TextReadListener {
     public TestTextReadListener(int headLine) {
-        super(headLine);
+        super(headLine, ',');
     }
 
     @Override
@@ -21,9 +21,7 @@ public class TestTextReadListener extends TextReadListener {
 
     @Override
     public void parseLineData(Map<Integer, String> lineData) {
-        lineData.forEach((k,v) -> {
-            System.out.println(v);
-        });
+        lineData.forEach((k,v) -> System.out.println(v));
         System.out.println();
     }
 

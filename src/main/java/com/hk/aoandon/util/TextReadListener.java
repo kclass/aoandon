@@ -1,6 +1,9 @@
 package com.hk.aoandon.util;
 
+import com.csvreader.CsvReader;
+
 import java.io.*;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -17,11 +20,11 @@ public abstract class TextReadListener {
     /**
      * 分隔符
      */
-    private String split;
+    private char split;
 
-    public TextReadListener(int headLine) {
+    public TextReadListener(int headLine, char split) {
         this.headLine = headLine;
-        this.split = ",";
+        this.split = split;
     }
 
     /**
@@ -29,27 +32,27 @@ public abstract class TextReadListener {
      *
      * @param inputStream 数据
      */
-    public void parseCsvData(InputStream inputStream){
+    public void parseCsvData(InputStream inputStream) {
         try {
             byte[] bytes = BaseUtil.inputStream2Bytes(inputStream);
-            BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(bytes), BaseUtil.getFileCharset(bytes)));
+            CsvReader csvReader = new CsvReader(new ByteArrayInputStream(bytes), split, Charset.forName(BaseUtil.getFileCharset(bytes)));
             int lineNum = 0;
-            String line;
-            while ((line = reader.readLine()) != null) {
-                Map<Integer, String> data = new HashMap<>(32);
-                String[] lineData = line.split(this.split);
-                for (int i = 0; i < lineData.length; i++) {
-                    data.put(i, lineData[i]);
+            while (csvReader.readRecord()) {
+                int lineNumCount = csvReader.getColumnCount();
+                Map<Integer, String> lineData = new HashMap<>(lineNumCount);
+                for (int i = 0; i < lineNumCount; i++) {
+                    lineData.put(i, csvReader.get(i));
                 }
                 if (lineNum < headLine) {
-                    parseHeadData(data);
+                    parseHeadData(lineData);
                     lineNum++;
                 } else {
-                    parseLineData(data);
+                    parseLineData(lineData);
                 }
             }
+
             doAfterAllAnalysed();
-            reader.close();
+            csvReader.close();
         } catch (Exception e) {
             onException(e);
         }
@@ -60,7 +63,7 @@ public abstract class TextReadListener {
      *
      * @param filePath 文件路径
      */
-    public void parseCsvData(String filePath){
+    public void parseCsvData(String filePath) {
         try {
             parseCsvData(new FileInputStream(filePath));
         } catch (FileNotFoundException e) {
