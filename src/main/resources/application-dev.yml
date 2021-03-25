@@ -17,3 +17,10 @@ spring:
         filter:
           stat:
             log-slow-sql: true
+
+
+file:
+  download:
+    file-path: D:\test\temp
+    url: precise-planning/download/output/
+    img-path: /home/web_app/api/dmo/precision_planning/files/img/

@@ -7,9 +7,7 @@ import com.dtsw.core.common.BaseExportModel;
 import com.dtsw.core.util.ExcelUtil;
 import lombok.Data;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -20,11 +18,15 @@ import java.util.Map;
 
 /**
  * @author kai.hu
- * @date 2020/10/9 16:58
+ * @date 2020/12/29 10:22
  */
-@RestController
-@RequestMapping("test")
-public class TestController {
+public class TestControllerTest {
+    private String modelName = "com.hk.aoandon.controller.TestModel";
+
+    @Test
+    public void test1() throws NoSuchMethodException, InvalidFormatException, InstantiationException, IOException, IllegalAccessException, InvocationTargetException, ClassNotFoundException {
+        ExcelUtil.exportExcel(null, "导出文件", modelName, createData());
+    }
 
     private List<Map<String, Object>> createData() {
         List<Map<String, Object>> result = new ArrayList<>();
@@ -37,13 +39,8 @@ public class TestController {
         }
         return result;
     }
-
-    private String modelName = "com.hk.aoandon.controller.TestModel";
-    @GetMapping("exportTest")
-    public void exportTest() throws NoSuchMethodException, InstantiationException, IOException, IllegalAccessException, InvocationTargetException, ClassNotFoundException, InvalidFormatException {
-        ExcelUtil.exportExcel(null, "导出文件", modelName, createData());
-    }
 }
+
 
 @Data
 @HeadRowHeight(20)

@@ -4,6 +4,7 @@ import com.ibm.icu.text.CharsetDetector;
 import com.ibm.icu.text.CharsetMatch;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
@@ -84,5 +85,22 @@ public class BaseUtil {
         }
         output.flush();
         return output;
+    }
+
+    /**
+     * 创建文件对象, 如果文件不存在，把文件建好
+     *
+     * @param filePath 文件绝对路径
+     * @return 文件对象
+     */
+    public static File createFileObject(String filePath) throws IOException {
+        File file = new File(filePath);
+        if (!file.exists()) {
+            boolean createFlag = file.createNewFile();
+            if (!createFlag) {
+                throw new RuntimeException("文件创建失败");
+            }
+        }
+        return file;
     }
 }
