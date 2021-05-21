@@ -1,22 +1,9 @@
 package com.hk.aoandon.controller;
 
-import com.alibaba.excel.annotation.ExcelProperty;
-import com.alibaba.excel.annotation.write.style.ColumnWidth;
-import com.alibaba.excel.annotation.write.style.HeadRowHeight;
-import com.dtsw.core.common.BaseExportModel;
-import com.dtsw.core.util.ExcelUtil;
-import lombok.Data;
-import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+import com.hk.aoandon.service.TestService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author kai.hu
@@ -25,34 +12,21 @@ import java.util.Map;
 @RestController
 @RequestMapping("test")
 public class TestController {
+   private TestService testService;
 
-    private List<Map<String, Object>> createData() {
-        List<Map<String, Object>> result = new ArrayList<>();
-        for (int i = 0; i < 3; i++) {
-            Map<String, Object> data = new HashMap<>();
-            data.put("username", "用户" + i);
-            data.put("province", "四川" + i);
-            data.put("city", "成都" + i);
-            result.add(data);
-        }
-        return result;
+    public TestController(TestService testService) {
+        this.testService = testService;
     }
 
-    private String modelName = "com.hk.aoandon.controller.TestModel";
     @GetMapping("exportTest")
-    public void exportTest() throws NoSuchMethodException, InstantiationException, IOException, IllegalAccessException, InvocationTargetException, ClassNotFoundException, InvalidFormatException {
-        ExcelUtil.exportExcel(null, "导出文件", modelName, createData());
-    }
-}
+    public String exportTest(String val) {
 
-@Data
-@HeadRowHeight(20)
-@ColumnWidth(20)
-class TestModel extends BaseExportModel {
-    @ExcelProperty(value = {"用户名（平台账号）"})
-    private String username;
-    @ExcelProperty(value = {"所属省"})
-    private String province;
-    @ExcelProperty(value = {"所属市"})
-    private String city;
+        return testService.exportTest(val);
+    }
+    @GetMapping("exportTest2")
+    public String exportTest2(String val) {
+
+        return testService.exportTest2(val);
+    }
+
 }

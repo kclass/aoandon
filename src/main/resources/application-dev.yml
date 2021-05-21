@@ -3,7 +3,7 @@ spring:
     druid:
       postgresql:
         driver-class-name: org.postgresql.Driver
-        url: jdbc:postgresql://172.18.2.6:5832/zxvmax?allowMultiQueries=true&useSSL=false&useUnicode=true&characterEncoding=utf8
+        url: jdbc:postgresql://10.100.10.1:55832/wnos?allowMultiQueries=true&useSSL=false&useUnicode=true&characterEncoding=utf8
         username: postgres
         password: U_tywg_2013
         initial-size: 2
@@ -17,10 +17,33 @@ spring:
         filter:
           stat:
             log-slow-sql: true
-
+#  redis:
+#    # Redis数据库索引（默认为0）
+#    database: 0
+#    # Redis服务器地址
+#    host: localhost
+#    # Redis服务器连接端口
+#    port: 6379
+#    # Redis服务器连接密码（默认为空）
+#    password: hk
+#    timeout: 1000
+#    # 连接超时时间（毫秒）
+#    jedis:
+#      pool:
+#        # 连接池最大连接数（使用负值表示没有限制）
+#        max-active: 200
+#        # 连接池最大阻塞等待时间（使用负值表示没有限制）
+#        max-wait: -1
+#        # 连接池中的最大空闲连接
+#        max-idle: 10
+#        # 连接池中的最小空闲连接
+#        min-idle: 0
 
 file:
   download:
     file-path: D:\test\temp
     url: precise-planning/download/output/
     img-path: /home/web_app/api/dmo/precision_planning/files/img/
+
+
+

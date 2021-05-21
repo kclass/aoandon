@@ -6,4 +6,8 @@ package com.hk.aoandon.service;
  */
 public interface TestService {
     Integer selectList();
+
+    String exportTest(String val);
+
+    String exportTest2(String val);
 }

@@ -1,9 +1,11 @@
 package com.hk.aoandon.util.word;
 
-import com.hk.aoandon.util.WordUtil;
-import org.apache.poi.ooxml.POIXMLDocumentPart;
-import org.apache.poi.openxml4j.opc.OPCPackage;
-import org.apache.poi.xwpf.usermodel.XWPFChart;
+import com.hk.aoandon.util.word.chart.BaseChartReplacer;
+import com.hk.aoandon.util.word.enums.WordTypeEnum;
+import com.hk.aoandon.util.word.picture.BasePictureReplacer;
+import com.hk.aoandon.util.word.table.BaseTableReplacer;
+import com.hk.aoandon.util.word.text.BaseTextReplacer;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
@@ -11,35 +13,62 @@ import org.apache.poi.xwpf.usermodel.XWPFRun;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author kai.hu
  * @date 2020/11/7 9:48
  */
 public class PoiWord {
-    private List<WordReplacer> wordReplacers = null;
+    /**
+     * 各种替换器
+     */
+    private Map<WordTypeEnum, IBaseReplacer> replacerMap = new LinkedHashMap<>();
 
-    private List<BaseWordTableReplacer> tableReplacers = null;
-
-    private List<BaseWordChartReplacer> chartReplacers = null;
-
-    private PoiWord() {}
-
-    public PoiWord(List<WordReplacer> wordReplacers, List<BaseWordTableReplacer> tableReplacers, List<BaseWordChartReplacer> chartReplacers) {
-        this.wordReplacers = wordReplacers;
-        this.tableReplacers = tableReplacers;
-        this.chartReplacers = chartReplacers;
+    /**
+     * 添加或者替换注册器
+     *
+     * @param type         word类型
+     * @param baseReplacer 替换器
+     */
+    public PoiWord registerReplacer(WordTypeEnum type, IBaseReplacer baseReplacer) {
+        replacerMap.put(type, baseReplacer);
+        return this;
     }
 
-    public void exportToWord(String returnUrl, String templateUrl, Map<String, Object> data) throws Exception {
-        FileInputStream fis = new FileInputStream(templateUrl);
-        XWPFDocument doc = new XWPFDocument(fis);
+    /**
+     * 整个替换替换器
+     *
+     * @param replacerMap 替换器
+     */
+    public PoiWord replaceAllReplacer(Map<WordTypeEnum, IBaseReplacer> replacerMap) {
+        this.replacerMap = replacerMap;
+        return this;
+    }
 
+    /**
+     * 默认的替换器
+     */
+    public PoiWord defaultRegister() {
+        replacerMap.put(WordTypeEnum.TEXT, BaseTextReplacer.getInstance());
+        replacerMap.put(WordTypeEnum.PICTURE, BasePictureReplacer.getInstance());
+        replacerMap.put(WordTypeEnum.TABLE, BaseTableReplacer.getInstance());
+        replacerMap.put(WordTypeEnum.CHART, BaseChartReplacer.getInstance());
+        return this;
+    }
+
+    /**
+     * 替换模板数据并导出word
+     *
+     * @param returnUrl 导出word文件位置
+     * @param in        模板文件
+     * @param data      数据
+     * @throws Exception 可能发生的异常
+     */
+    public void exportToWord(String returnUrl, FileInputStream in, Map<String, Object> data) throws Exception {
+        XWPFDocument doc = new XWPFDocument(in);
         // 替换word模板数据
-        replaceAll(doc, data);
-
+        doParagraphs(doc, data);
         // 保存结果文件
         FileOutputStream fos = null;
         try {
@@ -49,51 +78,39 @@ public class PoiWord {
             }
             fos = new FileOutputStream(file);
             doc.write(fos);
-
-            WordUtil.wordToPdf(doc, "D:\\result.pdf");
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            fis.close();
+            in.close();
             if (fos != null) {
                 fos.close();
             }
         }
     }
 
-    private void replaceAll(XWPFDocument doc, Map<String, Object> data) throws Exception {
-        doParagraphs(doc, data);
-        doCharts(doc, data);
+    /**
+     * 替换模板数据并导出word
+     *
+     * @param returnUrl   导出word文件位置
+     * @param templateUrl 模板文件位置
+     * @param data        数据
+     * @throws Exception 可能发生的异常
+     */
+    public void exportToWord(String returnUrl, String templateUrl, Map<String, Object> data) throws Exception {
+        FileInputStream fis = new FileInputStream(templateUrl);
+        exportToWord(returnUrl, fis, data);
     }
 
-    private void doCharts(XWPFDocument doc, Map<String, Object> data) {
-        //图表对象
-        List<POIXMLDocumentPart> relations = doc.getRelations();
-        for (POIXMLDocumentPart poixmlDocumentPart : relations) {
-            // 如果是图表元素
-            if (poixmlDocumentPart instanceof XWPFChart) {
-                // 获取图表对应的表格数据里面的第一行第一列数据，可以拿来当作key值
-                String key = PoiWordTools.getZeroData(poixmlDocumentPart).trim();
-                if (chartReplacers == null) {
-                    return;
-                }
-                Object chartData = data.get(key);
-                if (chartData != null) {
-                    boolean replaceFlag;
-                    for (BaseWordChartReplacer chartReplacer : chartReplacers) {
-                        replaceFlag = chartReplacer.replaceChart(poixmlDocumentPart, data.get(key));
-                        if (replaceFlag) {
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-    }
-
+    /**
+     * 替换数据的逻辑
+     *
+     * @param doc  文档对象
+     * @param data 数据
+     * @throws Exception 可能发生的异常
+     */
     private void doParagraphs(XWPFDocument doc, Map<String, Object> data) throws Exception {
         List<XWPFParagraph> paragraphList = doc.getParagraphs();
-        if (paragraphList == null || paragraphList.size() == 0) {
+        if (CollectionUtils.isEmpty(paragraphList)) {
             return;
         }
 
@@ -103,29 +120,36 @@ public class PoiWord {
                 String text = run.getText(0);
                 System.out.println(text);
                 //初步过滤
-                if (text == null || !text.contains("{")) {
+                if (text == null) {
                     continue;
+                } else {
+                    text = text.trim();
                 }
-
                 //是否替换标识
                 boolean replaceFlag = false;
-                //普通文本替换
-                if (wordReplacers != null) {
-                    for (WordReplacer replacer : wordReplacers) {
-                        replaceFlag = replacer.replace(text, data, run);
+                for (IBaseReplacer baseReplacer : replacerMap.values()) {
+                    if (!text.startsWith(baseReplacer.prefix()) || !text.endsWith(baseReplacer.suffix())) {
+                        continue;
+                    }
+
+                    //先将此处置为空
+                    run.setText("", 0);
+                    text = text.replace(baseReplacer.prefix(), "").replace(baseReplacer.suffix(), "");
+                    List<IReplacer> replacers = baseReplacer.replacers;
+                    if (CollectionUtils.isEmpty(replacers)) {
+                        continue;
+                    }
+                    for (IReplacer replacer : replacers) {
+                        if (replacer == null) {
+                            continue;
+                        }
+                        replaceFlag = replacer.replace(doc, paragraph, run, data.get(text), text);
                         if (replaceFlag) {
                             break;
                         }
                     }
-                }
-
-                //表格替换
-                if (!replaceFlag && tableReplacers != null) {
-                    for (BaseWordTableReplacer tableReplacer : tableReplacers) {
-                        replaceFlag = tableReplacer.replaceTable(text, data, paragraph, run, doc);
-                        if (replaceFlag) {
-                            break;
-                        }
+                    if (replaceFlag) {
+                        break;
                     }
                 }
             }
