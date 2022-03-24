@@ -4,6 +4,8 @@ import com.kclass.aoandon.vo.PointInfo;
 
 import java.awt.*;
 
+import static com.kclass.aoandon.constant.Constant.WINDOW_SCALE;
+
 /**
  * @author hu.kai
  * @description 基础工具包
@@ -51,6 +53,6 @@ public class AoandonUtil {
      */
     public static void mouseMove(Point point) {
         ROBOT.mouseMove(-1, -1);
-        ROBOT.mouseMove((int) (point.getX() / 1.25), (int) (point.getY() / 1.25));
+        ROBOT.mouseMove((int) (point.getX() / WINDOW_SCALE), (int) (point.getY() / WINDOW_SCALE));
     }
 }

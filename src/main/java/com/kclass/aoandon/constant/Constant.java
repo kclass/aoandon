@@ -24,6 +24,28 @@ public class Constant {
      */
     public static final double WINDOW_WIDTH;
 
+    /**
+     * 屏幕缩放比例
+     */
+    public static final double WINDOW_SCALE = 1.25D;
+
+    /**
+     * 字体
+     */
+    public final static String FONT_FAMILY = "宋体";
+    /**
+     * 标题字体
+     */
+    public final static Font FONT_TITLE = new Font(FONT_FAMILY, Font.BOLD, 27);
+    /**
+     * 普通字体
+     */
+    public final static Font FONT_NORMAL = new Font(FONT_FAMILY, Font.PLAIN, 13);
+    /**
+     * radio字体
+     */
+    public final static Font FONT_RADIO = new Font(FONT_FAMILY, Font.PLAIN, 15);
+
     static {
         TOOLKIT = Toolkit.getDefaultToolkit();
         Dimension screenSize = TOOLKIT.getScreenSize();
