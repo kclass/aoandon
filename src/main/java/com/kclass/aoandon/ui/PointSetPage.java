@@ -2,6 +2,7 @@ package com.kclass.aoandon.ui;
 
 import com.kclass.aoandon.component.MyPlainButton;
 import com.kclass.aoandon.constant.Constant;
+import com.kclass.aoandon.constant.PointDetailInfos;
 import com.kclass.aoandon.util.AoandonUtil;
 import com.kclass.aoandon.vo.PointDetailInfo;
 import com.kclass.aoandon.vo.PointInfo;
@@ -48,28 +49,96 @@ public abstract class PointSetPage extends JPanel {
     }
 
     private void init() {
-        this.setBackground(Color.WHITE);
+        this.setBackground(Constant.BG_COLOR);
         this.setLayout(new BorderLayout());
-
-        //返回按钮
-        this.addBackPanel();
-
-        //添加内容
-        this.addContent();
-
-        //为了让内容居中
-        JPanel eastBlankPanel = new JPanel();
-        eastBlankPanel.setBackground(Color.WHITE);
-        eastBlankPanel.setPreferredSize(new Dimension(50, 30));
-        this.add(eastBlankPanel, BorderLayout.EAST);
+        //分组选择器
+        this.add(getGroupSelect(), BorderLayout.NORTH);
+        //点展示区域
+        this.add(getPointContent(), BorderLayout.CENTER);
+        //提示区域
+        //TODO
     }
 
-    private void addContent() {
-        JPanel outPanel = new JPanel(new GridLayout(2, 1));
-        outPanel.setBackground(Color.WHITE);
-        outPanel.add(createUpPanel());
+    /**
+     * 分组展示
+     *
+     * @return 分组选择组件
+     */
+    private JComponent getGroupSelect() {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 30, 10));
+        panel.setBackground(Constant.BG_COLOR);
+
+        //分组展示
+        JPanel showPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 10));
+        showPanel.setBackground(Constant.BG_COLOR);
+        createGroupSelect();
+        Label label = new Label("分组:");
+        label.setFont(Constant.FONT_RADIO);
+        showPanel.add(label);
+        showPanel.add(this.groupComboBox);
+        panel.add(showPanel);
+
+        //添加分组
+        JPanel managePanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 10));
+        managePanel.setBackground(Constant.BG_COLOR);
+        JButton addButton = new MyPlainButton("新增");
+        addButton.addActionListener(e -> {
+            String groupName = JOptionPane.showInputDialog("请输入分组名称：");
+            try {
+                PointDetailInfos.addGroup(groupName);
+                this.groupComboBox.addItem(groupName);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(null, ex.getMessage(), "添加失败", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+        managePanel.add(addButton);
+
+        //修改分组
+        JButton updateButton = new MyPlainButton("修改");
+        updateButton.addActionListener(e -> {
+            String selectedItem = (String) this.groupComboBox.getSelectedItem();
+            String groupName = JOptionPane.showInputDialog("请输入分组名称：", selectedItem);
+            try {
+                PointDetailInfos.updateGroup(selectedItem, groupName);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(null, ex.getMessage(), "修改失败", JOptionPane.ERROR_MESSAGE);
+            }
+            this.groupComboBox.removeAllItems();
+            for (String s : PointDetailInfos.pointListMap.keySet()) {
+                this.groupComboBox.addItem(s);
+            }
+            this.groupComboBox.setSelectedItem(groupName);
+        });
+        managePanel.add(updateButton);
+        panel.add(managePanel);
+
+        return panel;
+    }
+
+    /**
+     * 创建组选择器
+     */
+    private void createGroupSelect() {
+        JComboBox<String> jComboBox = new JComboBox<>();
+        jComboBox.setFont(Constant.FONT_RADIO);
+        jComboBox.addActionListener(e -> this.addPointSelect());
+        for (String name : pointListMap.keySet()) {
+            jComboBox.addItem(name);
+        }
+        this.groupComboBox = jComboBox;
+    }
+
+    /**
+     * 点展示区域
+     *
+     * @return 点展示区域
+     */
+    private JPanel getPointContent() {
+        JPanel outPanel = new JPanel(new GridLayout(1, 2));
+        outPanel.setBackground(Constant.BG_COLOR);
+        outPanel.add(createLeftPanel());
         outPanel.add(createDownPanel());
-        this.add(outPanel);
+        return outPanel;
     }
 
     /**
@@ -78,9 +147,8 @@ public abstract class PointSetPage extends JPanel {
      * @return 下面
      */
     private JPanel createDownPanel() {
-        JPanel jPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 50, 10));
-        jPanel.setBackground(Color.WHITE);
-        this.add(jPanel);
+        JPanel jPanel = new JPanel(new FlowLayout(FlowLayout.TRAILING, 50, 10));
+        jPanel.setBackground(Constant.BG_COLOR);
         this.infoLabel = new JLabel();
         this.infoLabel.setFont(Constant.FONT_RADIO);
         PointDetailInfo pointDetailInfo = ((PointDetailInfo) this.pointComboBox.getSelectedItem());
@@ -97,14 +165,10 @@ public abstract class PointSetPage extends JPanel {
      *
      * @return 上面
      */
-    private JPanel createUpPanel() {
-        JPanel jPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 50, 10));
-        jPanel.setBackground(Color.WHITE);
-        this.add(jPanel);
-
+    private JPanel createLeftPanel() {
+        JPanel jPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 50, 10));
+        jPanel.setBackground(Constant.BG_COLOR);
         //按钮选择器
-        createGroupSelect();
-        jPanel.add(groupComboBox);
         createPointSelect();
         jPanel.add(pointComboBox);
 
@@ -191,31 +255,19 @@ public abstract class PointSetPage extends JPanel {
         }
     }
 
-    /**
-     * 创建组选择器
-     */
-    private void createGroupSelect() {
-        JComboBox<String> jComboBox = new JComboBox<>();
-        jComboBox.setFont(Constant.FONT_RADIO);
-        jComboBox.addActionListener(e -> this.addPointSelect());
-        for (String name : pointListMap.keySet()) {
-            jComboBox.addItem(name);
-        }
-        this.groupComboBox = jComboBox;
-    }
 
     /**
      * 添加返回按钮
      */
     private void addBackPanel() {
-        JButton backButton = new MyPlainButton("返回");
+        JButton backButton = new MyPlainButton("<<");
         backButton.addActionListener(e -> this.backPage());
 
-        JPanel backPanel = new JPanel();
+        JPanel backPanel = new JPanel(new BorderLayout());
         backPanel.setPreferredSize(new Dimension(50, 30));
-        backPanel.setBackground(Color.WHITE);
-        backPanel.add(backButton);
-        this.add(backPanel, BorderLayout.WEST);
+        backPanel.setBackground(Constant.BG_COLOR);
+        backPanel.add(backButton, BorderLayout.WEST);
+        this.add(backPanel, BorderLayout.NORTH);
     }
 
     /**

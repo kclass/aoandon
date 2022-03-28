@@ -1,8 +1,9 @@
 package com.kclass.aoandon;
 
-import com.kclass.aoandon.constant.PointDetailInfos;
-import com.kclass.aoandon.ui.PointSetPage;
 import com.kclass.aoandon.constant.Constant;
+import com.kclass.aoandon.constant.PointDetailInfos;
+import com.kclass.aoandon.ui.MainPage;
+import com.kclass.aoandon.ui.PointSetPage;
 
 import javax.swing.*;
 import java.awt.*;
@@ -43,33 +44,24 @@ public class App {
      * 添加内容
      */
     private void addContent() {
-        CardLayout cardLayout = new CardLayout();
-        JPanel mainPanel = new JPanel(cardLayout);
-
-        JButton button1 = new JButton("返回");
-        button1.addActionListener(e -> {
-            cardLayout.show(mainPanel, "2");
-        });
-
-        mainPanel.add(button1, "1");
-        JButton button = new JButton("123212223221321321421421521");
-        button.addActionListener(e -> {
-            cardLayout.show(mainPanel, "1");
-        });
-        mainPanel.add(button, "2");
-
+        MainPage mainPage = MainPage.getInstance();
+        jFrame.add(mainPage);
 
         PointSetPage pointSetPage = new PointSetPage(PointDetailInfos.pointListMap) {
             @Override
             public void backPage() {
-                cardLayout.show(mainPanel, "1");
+
             }
         };
-        mainPanel.add(pointSetPage, "pointSetPage");
 
-        cardLayout.show(mainPanel, "pointSetPage");
+        mainPage.addPage(pointSetPage, "点位配置1");
 
-        jFrame.add(mainPanel);
+        mainPage.addPage(new JLabel("点位配置2"), "点位配置2");
+        mainPage.addPage(new JLabel("点位配置3"), "点位配置3");
+        mainPage.addPage(new JLabel("点位配置4"), "点位配置4");
+        mainPage.addPage(new JLabel("点位配置5"), "点位配置5");
+        mainPage.addPage(new JLabel("点位配置6"), "点位配置6");
+        mainPage.addPage(new JLabel("点位配置7"), "点位配置7");
     }
 
     public static void main(String[] args) {

@@ -46,6 +46,11 @@ public class Constant {
      */
     public final static Font FONT_RADIO = new Font(FONT_FAMILY, Font.PLAIN, 15);
 
+    /**
+     * 背景颜色
+     */
+    public final static Color BG_COLOR = Color.WHITE;
+
     static {
         TOOLKIT = Toolkit.getDefaultToolkit();
         Dimension screenSize = TOOLKIT.getScreenSize();

@@ -3,6 +3,11 @@ package com.kclass.aoandon.util;
 import com.kclass.aoandon.vo.PointInfo;
 
 import java.awt.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 
 import static com.kclass.aoandon.constant.Constant.WINDOW_SCALE;
 
@@ -54,5 +59,27 @@ public class AoandonUtil {
     public static void mouseMove(Point point) {
         ROBOT.mouseMove(-1, -1);
         ROBOT.mouseMove((int) (point.getX() / WINDOW_SCALE), (int) (point.getY() / WINDOW_SCALE));
+    }
+
+    /**
+     * 读取文件成字符串
+     *
+     * @param file 文件
+     * @return 文件呢容
+     * @throws IOException io异常
+     */
+    public static String readAsString(File file, Charset cs) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        try (BufferedReader reader = Files.newBufferedReader(file.toPath(), cs)) {
+            for (; ; ) {
+                String line = reader.readLine();
+                if (line == null) {
+                    break;
+                }
+
+                sb.append(line);
+            }
+            return sb.toString();
+        }
     }
 }
