@@ -1,7 +1,6 @@
 package com.kclass.aoandon.constant;
 
 import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import com.kclass.aoandon.util.AoandonUtil;
 import com.kclass.aoandon.vo.PointDetailInfo;
 
@@ -9,10 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author hu.kai
@@ -48,17 +44,21 @@ public class PointDetailInfos {
         } else {
             try {
                 String json = AoandonUtil.readAsString(configFile, StandardCharsets.UTF_8);
-                Map<String, JSONArray> map = JSONObject.parseObject(json, Map.class);
-                map.forEach((k, v) -> {
-                    List<PointDetailInfo> points = new ArrayList<>();
-                    int size = v.size();
-                    for (int i = 0; i < size; i++) {
-                        PointDetailInfo object = v.getObject(i, PointDetailInfo.class);
-                        points.add(object);
-                        pointDetailInfos.add(object);
+                pointDetailInfos = JSONArray.parseArray(json, PointDetailInfo.class);
+                for (PointDetailInfo pointDetailInfo : pointDetailInfos) {
+                    String group = pointDetailInfo.getGroup();
+                    String[] split = group.split(Constant.GROUP_SPLIT);
+                    for (String s : split) {
+                        List<PointDetailInfo> pl = pointListMap.get(s);
+                        if (pl == null || pl.isEmpty()) {
+                            pl = new ArrayList<>();
+                            pl.add(pointDetailInfo);
+                            pointListMap.put(s, pl);
+                        } else {
+                            pl.add(pointDetailInfo);
+                        }
                     }
-                    pointListMap.put(k, points);
-                });
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -75,11 +75,6 @@ public class PointDetailInfos {
             throw new RuntimeException("分组已存在，添加失败");
         }
         pointListMap.put(groupName, new ArrayList<>());
-        try {
-            Files.write(configFile.toPath(), JSONObject.toJSON(pointListMap).toString().getBytes(StandardCharsets.UTF_8));
-        } catch (IOException e) {
-            throw new RuntimeException("配置文件写入失败");
-        }
     }
 
     /**
@@ -97,5 +92,83 @@ public class PointDetailInfos {
         }
         List<PointDetailInfo> remove = pointListMap.remove(oldGroupName);
         pointListMap.put(newGroupName, remove);
+        for (PointDetailInfo pointDetailInfo : pointDetailInfos) {
+            String[] split = pointDetailInfo.getGroup().split(Constant.GROUP_SPLIT);
+            for (int i = 0; i < split.length; i++) {
+                if (split[i].equals(oldGroupName)) {
+                    split[i] = newGroupName;
+                    pointDetailInfo.setGroup(AoandonUtil.appendStr(Constant.GROUP_SPLIT, split));
+                    writeConfig();
+                    break;
+                }
+            }
+        }
+    }
+
+    /**
+     * 写配置
+     */
+    private static void writeConfig() {
+        try {
+            Files.write(configFile.toPath(), JSONArray.toJSON(pointDetailInfos).toString().getBytes(StandardCharsets.UTF_8));
+        } catch (IOException e) {
+            throw new RuntimeException("配置文件写入失败");
+        }
+    }
+
+    /**
+     * 检查点名称是否可用
+     *
+     * @param pointName 点名称
+     * @return 是否可用
+     */
+    public static boolean checkPointNameValid(String pointName) {
+        if (pointName == null || pointName.isEmpty()) {
+            return false;
+        }
+        for (PointDetailInfo pointDetailInfo : pointDetailInfos) {
+            if (pointName.equals(pointDetailInfo.getName())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * 新增点
+     *
+     * @param point 点信息
+     * @throws Exception 受检异常
+     */
+    public static void addPoint(PointDetailInfo point) throws Exception {
+        String group = point.getGroup();
+        if (group == null || group.isEmpty()) {
+            throw new RuntimeException("分组至少选择一个");
+        }
+        if (point.getDesc() == null || point.getDesc().isEmpty()) {
+            throw new RuntimeException("描述必填");
+        }
+        if (Objects.isNull(point.getColor()) || Objects.isNull(point.getPoint())) {
+            throw new RuntimeException("点位必填");
+        }
+        String name = point.getName();
+        if (name == null || name.isEmpty()) {
+            throw new RuntimeException("点名称必填");
+        } else if (!checkPointNameValid(name)) {
+            throw new RuntimeException("点名称重复");
+        }
+
+        pointDetailInfos.add(point);
+        for (String s : group.split(Constant.GROUP_SPLIT)) {
+            List<PointDetailInfo> pointDetailInfos = pointListMap.get(s);
+            if (Objects.nonNull(pointDetailInfos)) {
+                pointDetailInfos.add(point);
+            } else {
+                pointDetailInfos = new ArrayList<>();
+                pointDetailInfos.add(point);
+                pointListMap.put(s, pointDetailInfos);
+            }
+        }
+        writeConfig();
     }
 }

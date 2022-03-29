@@ -51,6 +51,11 @@ public class Constant {
      */
     public final static Color BG_COLOR = Color.WHITE;
 
+    /**
+     * 组名分割符
+     */
+    public final static String GROUP_SPLIT = "&&";
+
     static {
         TOOLKIT = Toolkit.getDefaultToolkit();
         Dimension screenSize = TOOLKIT.getScreenSize();

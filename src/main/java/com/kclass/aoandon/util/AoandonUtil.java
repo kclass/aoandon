@@ -2,12 +2,14 @@ package com.kclass.aoandon.util;
 
 import com.kclass.aoandon.vo.PointInfo;
 
+import javax.swing.*;
 import java.awt.*;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.util.StringJoiner;
 
 import static com.kclass.aoandon.constant.Constant.WINDOW_SCALE;
 
@@ -81,5 +83,56 @@ public class AoandonUtil {
             }
             return sb.toString();
         }
+    }
+
+    /**
+     * 拼接字符串
+     *
+     * @param split 分割符
+     * @param str   字符串
+     * @return 拼接后的字符串
+     */
+    public static String appendStr(String split, String... str) {
+        StringJoiner stringJoiner = new StringJoiner(split);
+        for (String s : str) {
+            stringJoiner.add(s);
+        }
+        return stringJoiner.toString();
+    }
+
+    /**
+     * 拼接字符串
+     *
+     * @param split 分割符
+     * @param str   字符串
+     * @return 拼接后的字符串
+     */
+    public static String appendStr(String split, Iterable<String> str) {
+        StringJoiner stringJoiner = new StringJoiner(split);
+        for (String s : str) {
+            stringJoiner.add(s);
+        }
+        return stringJoiner.toString();
+    }
+
+    /**
+     * 创建垂直分布的画板
+     * @param jComponents
+     * @return
+     */
+    public static JPanel createVerticalPanel(JComponent... jComponents) {
+        JPanel jPanel = new JPanel();
+        GridBagLayout layout = new GridBagLayout();
+        GridBagConstraints constraints = new GridBagConstraints();
+        constraints.fill = GridBagConstraints.FIRST_LINE_START;
+        jPanel.setLayout(layout);
+
+        for (JComponent jComponent : jComponents) {
+            constraints.gridwidth = GridBagConstraints.REMAINDER;
+            layout.setConstraints(jComponent, constraints);
+            jPanel.add(jComponent);
+            constraints.gridwidth = 1;
+        }
+        return jPanel;
     }
 }

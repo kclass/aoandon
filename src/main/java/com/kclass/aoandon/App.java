@@ -1,7 +1,6 @@
 package com.kclass.aoandon;
 
 import com.kclass.aoandon.constant.Constant;
-import com.kclass.aoandon.constant.PointDetailInfos;
 import com.kclass.aoandon.ui.MainPage;
 import com.kclass.aoandon.ui.PointSetPage;
 
@@ -47,7 +46,7 @@ public class App {
         MainPage mainPage = MainPage.getInstance();
         jFrame.add(mainPage);
 
-        PointSetPage pointSetPage = new PointSetPage(PointDetailInfos.pointListMap) {
+        PointSetPage pointSetPage = new PointSetPage() {
             @Override
             public void backPage() {
 
